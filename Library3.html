@@ -1,134 +1,201 @@
 <!DOCTYPE html>
-<html lang="en">
-	<head>
-		<title>three.js webgl - animation - keyframes</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<link type="text/css" rel="stylesheet" href="main.css">
-		<style>
-			body {
-				background-color: #bfe3dd;
-				color: #000;
-			}
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-			a {
-				color: #2983ff;
-			}
-		</style>
-	</head>
+        <title>Babylon.js sample code</title>
 
-	<body>
+        <!-- Babylon.js -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js"></script>
+        <script src="https://assets.babylonjs.com/generated/Assets.js"></script>
+        <script src="https://cdn.babylonjs.com/recast.js"></script>
+        <script src="https://cdn.babylonjs.com/ammo.js"></script>
+        <script src="https://cdn.babylonjs.com/havok/HavokPhysics_umd.js"></script>
+        <script src="https://cdn.babylonjs.com/cannon.js"></script>
+        <script src="https://cdn.babylonjs.com/Oimo.js"></script>
+        <script src="https://cdn.babylonjs.com/earcut.min.js"></script>
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+        <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+        <script src="https://cdn.babylonjs.com/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js"></script>
+        <script src="https://cdn.babylonjs.com/postProcessesLibrary/babylonjs.postProcess.min.js"></script>
+        <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+        <script src="https://cdn.babylonjs.com/serializers/babylonjs.serializers.min.js"></script>
+        <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+        <script src="https://cdn.babylonjs.com/inspector/babylon.inspector.bundle.js"></script>
 
-		<div id="container"></div>
+        <style>
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
 
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> webgl - animation - keyframes<br/>
-			Model: <a href="https://artstation.com/artwork/1AGwX" target="_blank" rel="noopener">Littlest Tokyo</a> by
-			<a href="https://artstation.com/glenatron" target="_blank" rel="noopener">Glen Fox</a>, CC Attribution.
-		</div>
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
+            
+            #canvasZone {
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+    </head>
+<body>
+    <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
+    <script>
+        var canvas = document.getElementById("renderCanvas");
 
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "../build/three.module.js",
-					"three/addons/": "./jsm/"
-				}
-			}
-		</script>
+        var startRenderLoop = function (engine, canvas) {
+            engine.runRenderLoop(function () {
+                if (sceneToRender && sceneToRender.activeCamera) {
+                    sceneToRender.render();
+                }
+            });
+        }
 
-		<script type="module">
+        var engine = null;
+        var scene = null;
+        var sceneToRender = null;
+        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+                var createScene = function () {
 
-			import * as THREE from 'three';
+        // This creates a basic Babylon Scene object (non-mesh)
+        var scene = new BABYLON.Scene(engine);
 
-			import Stats from 'three/addons/libs/stats.module.js';
+        // Camera
+        var camera = new BABYLON.UniversalCamera("UniversalCamera", new BABYLON.Vector3(0, 0, -5), scene);
+        camera.setTarget(BABYLON.Vector3.Zero());
+        camera.attachControl(canvas, false);
 
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        // Scene color
+        scene.clearColor = new BABYLON.Color3(0.0, 0.0, 0.0);
 
-			import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-			import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        // Set up new rendering pipeline
+        var pipeline = new BABYLON.DefaultRenderingPipeline("default", true, scene);
 
-			let mixer;
+        // Tone mapping
+        scene.imageProcessingConfiguration.toneMappingEnabled = true;
+        scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+        scene.imageProcessingConfiguration.exposure = 1;
 
-			const clock = new THREE.Clock();
-			const container = document.getElementById( 'container' );
+        // Bloom
+        pipeline.bloomEnabled = true;
+        pipeline.bloomThreshold = 0.7;
+        pipeline.bloomWeight = 2;
+        pipeline.bloomKernel = 64;
+        pipeline.bloomScale = 0.5;
 
-			const stats = new Stats();
-			container.appendChild( stats.dom );
+        // Spawn particle system on key press
+        document.addEventListener('keydown', toggleEmission);
 
-			const renderer = new THREE.WebGLRenderer( { antialias: true } );
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			container.appendChild( renderer.domElement );
+        // Remove listeners when scene disposed
+        scene.onDisposeObservable.add(function()
+        {
+            document.removeEventListener('keydown', toggleEmission);
+        });
 
-			const pmremGenerator = new THREE.PMREMGenerator( renderer );
+        // Set up animation sheet
+        var setupAnimationSheet = function(system, texture, width, height, numSpritesWidth, numSpritesHeight, animationSpeed, isRandom) 
+        {
+            // Assign animation parameters
+            system.isAnimationSheetEnabled = true;
+            system.particleTexture = new BABYLON.Texture(texture, scene, false, false);
+            system.spriteCellWidth = width / numSpritesWidth;
+            system.spriteCellHeight = height / numSpritesHeight;
+            var numberCells = numSpritesWidth * numSpritesHeight;
+            system.startSpriteCellID = 0;
+            system.endSpriteCellID = numberCells - 1;
+            system.spriteCellChangeSpeed = animationSpeed;    
+            system.spriteRandomStartCell = isRandom; 
+            system.updateSpeed = 1/30;      
+        }
 
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color( 0xbfe3dd );
-			scene.environment = pmremGenerator.fromScene( new RoomEnvironment( renderer ), 0.04 ).texture;
+        // Code
+        var line = BABYLON.ParticleHelper.CreateDefault(new BABYLON.Vector3(0, 3, 0), 300);
+        line.createBoxEmitter(new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(0, -1, 0), new BABYLON.Vector3(-5, 0, -0.5), new BABYLON.Vector3(5, 0, 0.5));
+        line.minLifeTime = 1;
+        line.maxLifeTime = 1.5;
+        line.minSize = 0.4;
+        line.maxSize = 0.4;
+        line.emitRate = 50;
+        line.minEmitPower = 4;
+        line.maxEmitPower = 4;
+        line.addColorGradient(0, new BABYLON.Color4(0.0, 0.1, 0.0, 1));
+        line.addColorGradient(1, new BABYLON.Color4(0.0, 0.1, 0.0, 1));
+        line.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
 
-			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
-			camera.position.set( 5, 2, 8 );
+        // Sub emitters
+        var code = new BABYLON.SubEmitter(new BABYLON.ParticleHelper.CreateDefault(new BABYLON.Vector3(0, 60, 0), 300));
+        setupAnimationSheet(code.particleSystem, "https://raw.githubusercontent.com/PatrickRyanMS/BabylonJStextures/master/ParticleSystems/Code/characters.png", 512, 512, 6, 6, 0, true);
+        code.particleSystem.emitter = new BABYLON.AbstractMesh("", scene);
+        code.particleSystem.createSphereEmitter(0.01, 1);
+        code.particleSystem.minLifeTime = 4;
+        code.particleSystem.maxLifeTime = 6;
+        code.particleSystem.minEmitPower = 0;
+        code.particleSystem.maxEmitPower = 0;
+        code.particleSystem.emitRate = 15;
+        code.particleSystem.minSize = 0.15;
+        code.particleSystem.maxSize = 0.15;
+        code.particleSystem.addColorGradient(0.0, new BABYLON.Color4(225/255, 255/255, 220/255, 1));
+        code.particleSystem.addColorGradient(0.2, new BABYLON.Color4(41/255, 208/255, 19/255, 1));
+        code.particleSystem.addColorGradient(1.0, new BABYLON.Color4(20/255, 97/255, 10/255, 0));
+        code.type = BABYLON.SubEmitterType.ATTACHED;
+        code.particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
 
-			const controls = new OrbitControls( camera, renderer.domElement );
-			controls.target.set( 0, 0.5, 0 );
-			controls.update();
-			controls.enablePan = false;
-			controls.enableDamping = true;
+        line.subEmitters = [code];
 
-			const dracoLoader = new DRACOLoader();
-			dracoLoader.setDecoderPath( 'jsm/libs/draco/gltf/' );
+        // Start
+        var toggle = true;
+        line.start();
 
-			const loader = new GLTFLoader();
-			loader.setDRACOLoader( dracoLoader );
-			loader.load( 'models/gltf/LittlestTokyo.glb', function ( gltf ) {
+        function toggleEmission()
+        {
+            if(event.keyCode == 32) 
+            {
+                if (toggle == false)
+                {
+                    line.start();
+                    toggle = !toggle;
+                }
+                else        
+                {
+                    line.stop();
+                    toggle = !toggle;
+                }
+            } 
+        }
 
-				const model = gltf.scene;
-				model.position.set( 1, 1, 0 );
-				model.scale.set( 0.01, 0.01, 0.01 );
-				scene.add( model );
+        return scene;
 
-				mixer = new THREE.AnimationMixer( model );
-				mixer.clipAction( gltf.animations[ 0 ] ).play();
+        };
+                window.initFunction = async function() {
+                    
+                    
+                    
+                    var asyncEngineCreation = async function() {
+                        try {
+                        return createDefaultEngine();
+                        } catch(e) {
+                        console.log("the available createEngine function failed. Creating the default engine instead");
+                        return createDefaultEngine();
+                        }
+                    }
 
-				animate();
+                    window.engine = await asyncEngineCreation();
+        if (!engine) throw 'engine should not be null.';
+        startRenderLoop(engine, canvas);
+        window.scene = createScene();};
+        initFunction().then(() => {sceneToRender = scene                    
+        });
 
-			}, undefined, function ( e ) {
-
-				console.error( e );
-
-			} );
-
-
-			window.onresize = function () {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-			};
-
-
-			function animate() {
-
-				requestAnimationFrame( animate );
-
-				const delta = clock.getDelta();
-
-				mixer.update( delta );
-
-				controls.update();
-
-				stats.update();
-
-				renderer.render( scene, camera );
-
-			}
-
-
-		</script>
-
-	</body>
-
+        // Resize
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+    </script>
+</body>
 </html>
