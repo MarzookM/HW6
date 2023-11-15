@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo Page</title>
-
-    <!-- External jQuery and Velocity.js libraries (make sure to include them) -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/velocity/1.2.3/velocity.min.js"></script>
 
@@ -20,7 +15,7 @@
             color: rgb(25, 25, 25);
         }
 
-        /* Additional styling if needed */
+       
         p {
             font-size: 18px;
             margin-bottom: 15px;
@@ -35,18 +30,15 @@
 </head>
 <body>
 
-    <!-- HTML Content -->
     <p>Refresh this page to re-run the demo.</p>
     <div>
         Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
     </div>
 
-    <!-- JavaScript -->
+   
     <script>
-        // jQuery and Velocity.js animations
+  
         $.Velocity.animate(document.getElementsByTagName("div"), { opacity: 0 }, 2000);
-
-        // As an additional demonstration, use the "reverse" command on the element.
         $.Velocity.animate(document.getElementsByTagName("div"), "reverse", 1000);
     </script>
 </body>
