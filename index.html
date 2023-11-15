@@ -1,47 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>JavaScript Library #1</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js Pie Chart</title>
+    
+    <!-- Include Chart.js library from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
- <div>
-  <canvas id="myChart"></canvas>
-</div>
+    <!-- Your page content here -->
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Create a canvas element to render the chart -->
+    <canvas id="myPieChart" width="400" height="400"></canvas>
 
-<script>
-const config = {
-  type: 'pie',
-  data: data,
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Chart.js Pie Chart'
-      }
-    }
-  },
-};
+    <!-- Include your configuration and setup script -->
+    <script>
+        // Configuration
+        const DATA_COUNT = 5;
+        const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
 
-  const DATA_COUNT = 5;
-const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+        const data = {
+            labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue'],
+            datasets: [
+                {
+                    label: 'Dataset 1',
+                    data: Array.from({ length: DATA_COUNT }, () => Math.floor(Math.random() * (NUMBER_CFG.max - NUMBER_CFG.min + 1)) + NUMBER_CFG.min),
+                    backgroundColor: ['red', 'orange', 'yellow', 'green', 'blue'],
+                }
+            ]
+        };
 
-const data = {
-  labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue'],
-  datasets: [
-    {
-      label: 'Dataset 1',
-      data: Utils.numbers(NUMBER_CFG),
-      backgroundColor: Object.values(Utils.CHART_COLORS),
-    }
-  ]
-};
-</script>
+        const config = {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Chart.js Pie Chart'
+                    }
+                }
+            },
+        };
 
+        // Create a new chart using the configuration
+        const ctx = document.getElementById('myPieChart').getContext('2d');
+        new Chart(ctx, config);
+    </script>
 </body>
 </html>
