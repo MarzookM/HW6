@@ -1,109 +1,32 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Clock</title>
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
 
-    <!-- External CSS styles -->
-    <style>
-        @import url("https://fonts.googleapis.com/css?family=Barlow|Barlow+Condensed&display=swap");
+      function drawChart() {
 
-        * {
-            box-sizing: border-box;
-            padding: 0;
-            margin: 0;
-        }
+        var data = google.visualization.arrayToDataTable([
+          ['Task', 'Hours per Day'],
+          ['Work',     11],
+          ['Eat',      2],
+          ['Commute',  2],
+          ['Watch TV', 2],
+          ['Sleep',    7]
+        ]);
 
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #262728;
-            font-family: "Barlow", sans-serif;
-        }
+        var options = {
+          title: 'My Daily Activities'
+        };
 
-        svg {
-            margin-top: 1rem;
-            width: 60vmin;
-            height: auto;
-            filter: url(#shadow-large);
-        }
+        var chart = new google.visualization.PieChart(document.getElementById('piechart'));
 
-        svg text {
-            font-family: "Barlow Condensed", sans-serif;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            margin-top: 2rem;
-        }
-
-        .controls div {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            margin: 1rem;
-        }
-
-        .controls div button {
-            border: none;
-            border-radius: 50%;
-            background: #ea3f3f;
-            padding: 0.25rem;
-            color: #fff;
-            width: 48px;
-            height: 48px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            filter: url(#shadow-large);
-            margin: 0.5rem 0;
-        }
-
-        .controls div span {
-            color: #fff;
-        }
-    </style>
-</head>
-<body>
-
-    <!-- SVG Clock -->
-    <svg viewBox="0 0 100 100" width="100" height="100">
-        <!-- SVG content (see the provided code) -->
-    </svg>
-
-    <!-- Controls -->
-    <div class="controls">
-        <div class="controls__control" data-control="hours">
-            <button>+</button>
-            <span class="control--hours">h</span>
-            <button>-</button>
-        </div>
-
-        <div class="controls__control" data-control="minutes">
-            <button>+</button>
-            <span class="control--minutes">m</span>
-            <button>-</button>
-        </div>
-
-        <div class="controls__control" data-control="seconds">
-            <button>+</button>
-            <span class="control--seconds">s</span>
-            <button>-</button>
-        </div>
-    </div>
-
-    <!-- External JavaScript (anime.js library) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-
-    <!-- Inline JavaScript -->
-    <script>
-        // JavaScript code (see the provided code)        
+        chart.draw(data, options);
+      }
     </script>
-</body>
+  </head>
+  <body>
+    <div id="piechart" style="width: 900px; height: 500px;"></div>
+  </body>
 </html>
