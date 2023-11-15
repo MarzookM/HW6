@@ -3,54 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chart.js Pie Chart</title>
+    <title>Homework 6</title>
     
-    <!-- Include Chart.js library from CDN -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Your page content here -->
+<script>
+    
+const ctx = document.getElementById('myChart');
 
-    <!-- Create a canvas element to render the chart with specific dimensions -->
-    <canvas id="myPieChart" width="300" height="300"></canvas>
-
-    <!-- Include your configuration and setup script -->
-    <script>
-        // Configuration
-        const DATA_COUNT = 5;
-        const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
-
-        const data = {
-            labels: ['Red', 'Orange', 'Yellow', 'Green', 'Blue'],
-            datasets: [
-                {
-                    label: 'Dataset 1',
-                    data: Array.from({ length: DATA_COUNT }, () => Math.floor(Math.random() * (NUMBER_CFG.max - NUMBER_CFG.min + 1)) + NUMBER_CFG.min),
-                    backgroundColor: ['red', 'orange', 'yellow', 'green', 'blue'],
-                }
-            ]
-        };
-
-        const config = {
-            type: 'pie',
-            data: data,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Chart.js Pie Chart'
-                    }
-                }
-            },
-        };
-
-        // Create a new chart using the configuration
-        const ctx = document.getElementById('myPieChart').getContext('2d');
-        new Chart(ctx, config);
-    </script>
+  new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+      datasets: [{
+        label: '# of Votes',
+        data: [12, 19, 3, 5, 2, 3],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+</script>
+   
 </body>
 </html>
